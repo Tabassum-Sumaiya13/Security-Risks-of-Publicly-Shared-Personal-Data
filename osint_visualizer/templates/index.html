@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT Attack Visualizer | Ethical Cybersecurity Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-badge">
+                <span class="badge">⚠️ ETHICAL DEMONSTRATION</span>
+            </div>
+            <h1>🔍 OSINT Attack Visualizer</h1>
+            <p class="subtitle">See how publicly available data enables social engineering attacks</p>
+            <div class="warning-box">
+                <span>🚨</span>
+                <span>This tool demonstrates attack vectors. Only use on accounts you own.</span>
+            </div>
+        </header>
+
+        <!-- Input Section -->
+        <div class="card input-card">
+            <h2>🎯 Target Selection</h2>
+            <div class="input-group">
+                <label for="username">Social Media Username:</label>
+                <input type="text" id="username" placeholder="e.g., john_doe" autocomplete="off">
+                <button id="startAttack" class="btn-primary">
+                    <span>🚀</span> Launch OSINT Attack
+                </button>
+            </div>
+            <p class="note">Enter YOUR own username for demonstration</p>
+        </div>
+
+        <!-- Attack Dashboard -->
+        <div id="dashboard" style="display: none;">
+            <!-- Progress Bar -->
+            <div class="card">
+                <h2>📡 Attack Progress</h2>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="phase-indicators">
+                    <span class="phase" id="phase1">🔍 Recon</span>
+                    <span class="phase" id="phase2">📊 Collect</span>
+                    <span class="phase" id="phase3">💀 Breach</span>
+                    <span class="phase" id="phase4">👥 Social</span>
+                    <span class="phase" id="phase5">🧠 Analyze</span>
+                    <span class="phase" id="phase6">🎯 Attack</span>
+                </div>
+            </div>
+
+            <!-- Split View: Logs + Data -->
+            <div class="split-view">
+                <!-- Attack Logs (Terminal) -->
+                <div class="card terminal">
+                    <h2>💻 Attack Logs</h2>
+                    <div class="log-container" id="logContainer">
+                        <div class="log-entry info">[INIT] OSINT Attack Visualizer ready</div>
+                        <div class="log-entry info">[WAIT] Enter a username to begin</div>
+                    </div>
+                </div>
+
+                <!-- Collected Data -->
+                <div class="card data-panel">
+                    <h2>📁 Intelligence Summary</h2>
+                    <div id="dataSummary">
+                        <div class="data-placeholder">Attack simulation will populate data here</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Phishing Email -->
+            <div class="card phishing-card">
+                <h2>✉️ Generated Spear Phishing Email</h2>
+                <div class="phishing-email" id="phishingEmail">
+                    <div class="email-placeholder">Personalized phishing email will appear here</div>
+                </div>
+                <div class="warning-note">⚠️ This email was GENERATED for demonstration. No email was sent.</div>
+            </div>
+
+            <!-- Risk Score -->
+            <div class="card risk-card">
+                <h2>📊 Risk Assessment</h2>
+                <div class="risk-score-container">
+                    <div class="risk-meter" id="riskMeter">
+                        <div class="risk-fill" id="riskFill"></div>
+                    </div>
+                    <div class="risk-labels">
+                        <span>Low</span>
+                        <span>Medium</span>
+                        <span>High</span>
+                        <span>Critical</span>
+                    </div>
+                </div>
+                <div id="riskDetails" class="risk-details"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>⚠️ EDUCATIONAL PURPOSES ONLY — Understanding these techniques helps prevent real attacks</p>
+            <p>© 2024 OSINT Attack Visualizer | Ethical Cybersecurity Education</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

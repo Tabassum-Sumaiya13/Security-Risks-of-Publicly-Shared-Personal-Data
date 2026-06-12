@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spear Phishing Awareness Simulator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="app-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Educational simulation</p>
+                <h1>Spear Phishing Awareness Simulator</h1>
+                <p class="subtitle">Compare synthetic public profiles and see how exposure changes simulated message risk.</p>
+            </div>
+            <div class="safety-card">
+                <strong>Safety boundary</strong>
+                <span>Synthetic profiles only. No scraping, sending, or real targeting.</span>
+            </div>
+        </header>
+
+        <section class="workspace">
+            <aside class="panel profile-panel">
+                <div class="panel-heading">
+                    <h2>Profiles</h2>
+                    <span id="profileCount">0</span>
+                </div>
+                <div id="profileList" class="profile-list">
+                    <div class="loading">Loading profiles...</div>
+                </div>
+            </aside>
+
+            <section class="panel detail-panel">
+                <div id="emptyState" class="empty-state">
+                    <div class="radar-visual" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <h2>Select a synthetic profile</h2>
+                    <p>The simulator will calculate exposure, generate a training email, and show defensive actions.</p>
+                </div>
+
+                <div id="results" class="results hidden">
+                    <div class="result-header">
+                        <div>
+                            <p class="eyebrow">Selected profile</p>
+                            <h2 id="selectedName"></h2>
+                            <p id="selectedMeta"></p>
+                        </div>
+                        <div class="run-controls">
+                            <label class="llm-toggle">
+                                <input id="llmToggle" type="checkbox">
+                                <span>LLM mode</span>
+                            </label>
+                            <button id="simulateButton" type="button">Run simulation</button>
+                        </div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric">
+                            <span>Exposure</span>
+                            <strong id="exposureScore">0.00</strong>
+                        </div>
+                        <div class="metric">
+                            <span>Risk level</span>
+                            <strong id="riskLevel">Low</strong>
+                        </div>
+                        <div class="metric">
+                            <span>Convincingness</span>
+                            <strong id="convincingness">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="content-grid">
+                        <article class="section-block">
+                            <h3>Exposure Factors</h3>
+                            <div id="factorBars" class="factor-bars"></div>
+                        </article>
+
+                        <article class="section-block">
+                            <div class="block-title-row">
+                                <h3>Generated Training Email</h3>
+                                <span id="generationMethod">Template</span>
+                            </div>
+                            <pre id="emailPreview" class="email-preview">Run the simulation to generate a safe training example.</pre>
+                        </article>
+                    </div>
+
+                    <div class="content-grid bottom-grid">
+                        <article class="section-block">
+                            <h3>Model Comparison</h3>
+                            <canvas id="comparisonChart" width="520" height="260"></canvas>
+                        </article>
+
+                        <article class="section-block">
+                            <h3>Defensive Actions</h3>
+                            <ul id="defenseList" class="defense-list"></ul>
+                        </article>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

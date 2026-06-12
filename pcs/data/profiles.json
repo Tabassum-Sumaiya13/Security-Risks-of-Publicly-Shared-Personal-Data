@@ -1,0 +1,87 @@
+{
+  "exposure_weights": {
+    "identity": 0.2,
+    "location": 0.2,
+    "social": 0.25,
+    "behavioral": 0.25,
+    "preferences": 0.1
+  },
+  "profiles": [
+    {
+      "id": "minimal",
+      "name": "Alex Chen",
+      "title": "Student",
+      "organization": "",
+      "city": "",
+      "summary": "Very limited public information.",
+      "color": "#2f855a",
+      "details": {
+        "username": "alexc92",
+        "public_photo": false,
+        "city": "",
+        "workplace": "",
+        "colleagues": [],
+        "recent_activity": "",
+        "routine": "",
+        "interests": []
+      }
+    },
+    {
+      "id": "moderate",
+      "name": "Jamie Rodriguez",
+      "title": "Senior Analyst",
+      "organization": "BrightPath Financial",
+      "city": "Denver",
+      "summary": "Professional profile and basic location are visible.",
+      "color": "#b7791f",
+      "details": {
+        "username": "jamie_rodriguez",
+        "public_photo": true,
+        "city": "Denver",
+        "workplace": "BrightPath Financial",
+        "colleagues": [],
+        "recent_activity": "",
+        "routine": "",
+        "interests": ["financial reporting"]
+      }
+    },
+    {
+      "id": "exposed",
+      "name": "Taylor Morgan",
+      "title": "Project Lead",
+      "organization": "Nexus Dynamics",
+      "city": "Austin",
+      "summary": "Workplace, interests, colleagues, and recent activity are visible.",
+      "color": "#dd6b20",
+      "details": {
+        "username": "tmorgan_ops",
+        "public_photo": true,
+        "city": "Austin",
+        "workplace": "Nexus Dynamics",
+        "colleagues": ["Sarah Chen, IT Support Manager", "Marcus Webb, Team Director"],
+        "recent_activity": "posted about attending a cloud security conference",
+        "routine": "",
+        "interests": ["cloud security", "Kubernetes", "DevOps"]
+      }
+    },
+    {
+      "id": "critical",
+      "name": "Jordan Smith",
+      "title": "VP of Engineering",
+      "organization": "Apex Technologies",
+      "city": "Seattle",
+      "summary": "Highly exposed profile with routine, relationships, interests, and travel cues.",
+      "color": "#c53030",
+      "details": {
+        "username": "jsmith_eng",
+        "public_photo": true,
+        "city": "Seattle",
+        "workplace": "Apex Technologies",
+        "colleagues": ["Lisa Wong, CEO", "Michael Torres, Executive Assistant", "James Kim, IT Administrator"],
+        "recent_activity": "returned from a Tokyo business trip",
+        "routine": "usually reviews email between 8-9 AM and 7-8 PM",
+        "interests": ["cybersecurity", "AI governance", "marathon running"]
+      }
+    }
+  ]
+}

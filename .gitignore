@@ -1,0 +1,64 @@
+# Environment variables (API keys, secrets)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Flask
+instance/
+.webassets-cache
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Project specific
+simulation_results.json
+*.pyc
+__pycache__/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Secret keys / credentials
+*.pem
+*.key
+*.crt
+secrets/
+credentials.json

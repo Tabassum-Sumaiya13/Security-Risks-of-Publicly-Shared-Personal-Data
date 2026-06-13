@@ -98,6 +98,20 @@ async function runSimulation() {
 
         document.getElementById("exposureScore").textContent = result.exposure_score.toFixed(2);
         document.getElementById("riskLevel").textContent = result.risk_level;
+
+        if (!response.ok) {
+            document.getElementById("convincingness").textContent = "-";
+            document.getElementById("emailPreview").textContent = result.error || "Simulation failed.";
+            document.getElementById("generationMethod").textContent = result.llm_requested
+                ? "Gemini error"
+                : "Simulation error";
+            document.getElementById("defenseList").innerHTML = (result.recommendations || [])
+                .map((item) => `<li>${item}</li>`)
+                .join("");
+            renderFactors(result.factors || {});
+            return;
+        }
+
         document.getElementById("convincingness").textContent = `${result.metrics.convincingness}/10`;
         document.getElementById("emailPreview").textContent = result.email;
         document.getElementById("generationMethod").textContent = result.llm_error

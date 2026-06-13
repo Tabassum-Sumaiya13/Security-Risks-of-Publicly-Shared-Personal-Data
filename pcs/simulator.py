@@ -4,9 +4,11 @@ from dataclasses import dataclass
 from typing import Any
 
 try:
-    from google import genai
-except ImportError:  # Optional dependency for template-only mode.
+    import google.generativeai as genai
+    GENAI_AVAILABLE = True
+except ImportError:
     genai = None
+    GENAI_AVAILABLE = False
 
 
 @dataclass(frozen=True)
@@ -46,32 +48,60 @@ class ExposureCalculator:
 
 class PhishingSimulator:
     def __init__(self, use_llm: bool = False, api_key: str | None = None, model: str = "gemini-2.0-flash"):
-        self.use_llm = bool(use_llm and api_key and genai)
+        self.use_llm = use_llm
         self.model = model
-        self.client = genai.Client(api_key=api_key) if self.use_llm else None
+        self.client = None
         self.last_error: str | None = None
+        
+        # Check if we should initialize LLM
+        if use_llm:
+            if not GENAI_AVAILABLE:
+                raise RuntimeError(
+                    "LLM mode requested but google-generativeai package not installed. "
+                    "Run: pip install google-generativeai"
+                )
+            if not api_key:
+                raise RuntimeError(
+                    "LLM mode requested but no API key provided. "
+                    "Set GEMINI_API_KEY in .env file"
+                )
+            
+            # Initialize Gemini
+            try:
+                genai.configure(api_key=api_key)
+                self.client = genai.GenerativeModel(model)
+                print(f"✅ Gemini initialized with model: {model}")
+            except Exception as e:
+                raise RuntimeError(f"Failed to initialize Gemini: {e}")
 
     def generate_email(self, profile: dict[str, Any], exposure: ExposureResult) -> str:
         """Generate email - NO FALLBACK. If LLM fails, raise exception."""
         if self.client:
             return self._generate_with_llm(profile, exposure)
-        # Instead of falling back to template, raise a clear error
-        raise RuntimeError(
-            "LLM mode requested but not available. "
-            "Set GEMINI_API_KEY environment variable and restart the server."
-        )
+        
+        # Clear error message
+        if self.use_llm:
+            raise RuntimeError(
+                "LLM mode requested but Gemini client not initialized. "
+                "Check that API key is valid and restart the server."
+            )
+        else:
+            raise RuntimeError(
+                "LLM mode requested but use_llm=False. This should not happen."
+            )
 
     def _generate_with_llm(self, profile: dict[str, Any], exposure: ExposureResult) -> str:
         details = profile["details"]
+        
         prompt = f"""
 Create a simulated spear-phishing awareness training email for a classroom/demo app.
 
-Safety rules:
-- Use only the synthetic profile details below.
-- Do not ask for passwords, MFA codes, payment, credential entry, malware installation, or real action.
-- Use exactly the placeholder [SIMULATED LINK] instead of a URL.
-- Make the email realistic enough for awareness training, but clearly bounded as a simulation.
-- Return only the email content with a Subject line.
+⚠️ CRITICAL SAFETY RULES:
+- Start with "[SECURITY TRAINING SIMULATION - DO NOT SEND]"
+- Use only the synthetic profile details below
+- Do NOT ask for passwords, MFA codes, payment, credential entry, or malware
+- Use exactly "[SIMULATED LINK]" instead of any URL
+- Make it realistic enough for training
 
 Synthetic profile:
 - Name: {profile["name"]}
@@ -84,20 +114,29 @@ Synthetic profile:
 - Interests: {", ".join(details.get("interests", [])) or "Unknown"}
 - Exposure score: {exposure.score}
 - Risk level: {exposure.level}
+
+Generate a realistic phishing email that demonstrates how attackers use this information.
+Keep it under 300 words.
 """.strip()
 
         try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=prompt,
-            )
-            return response.text.strip()
+            response = self.client.generate_content(prompt)
+            
+            if not response or not response.text:
+                raise RuntimeError("Empty response from Gemini API")
+            
+            email_content = response.text.strip()
+            
+            # Ensure safety warning
+            if "[SECURITY TRAINING SIMULATION" not in email_content:
+                email_content = "[SECURITY TRAINING SIMULATION - DO NOT SEND]\n\n" + email_content
+                
+            return email_content
+            
         except Exception as exc:
             self.last_error = str(exc)
-            # Re-raise with clear message - NO TEMPLATE FALLBACK
             raise RuntimeError(f"Gemini API call failed: {exc}")
 
-    # Template generation as a regular instance method (not static)
     def generate_template_email(self, profile: dict[str, Any], exposure: ExposureResult) -> str:
         """Instance method for template generation (no LLM)"""
         details = profile["details"]
@@ -110,6 +149,7 @@ Synthetic profile:
 
         if exposure.score < 0.25:
             return (
+                "[SECURITY TRAINING SIMULATION - DO NOT SEND]\n\n"
                 "Subject: Account security reminder\n\n"
                 f"Hi {name},\n\n"
                 "Please review the latest account security checklist when you have a moment.\n\n"
@@ -119,6 +159,7 @@ Synthetic profile:
 
         if exposure.score < 0.55:
             return (
+                "[SECURITY TRAINING SIMULATION - DO NOT SEND]\n\n"
                 f"Subject: {workplace} security policy review\n\n"
                 f"Hi {name},\n\n"
                 f"We are refreshing internal security guidance for {workplace}. "
@@ -130,6 +171,7 @@ Synthetic profile:
         context = f" after you {recent}" if recent else ""
         timing = f" Since you {routine}, this should only take a minute." if routine else ""
         return (
+            "[SECURITY TRAINING SIMULATION - DO NOT SEND]\n\n"
             f"Subject: Follow-up on {interest} access\n\n"
             f"Hi {name},\n\n"
             f"This is {colleague}. I am following up on the {interest} access review for {workplace}{context}."

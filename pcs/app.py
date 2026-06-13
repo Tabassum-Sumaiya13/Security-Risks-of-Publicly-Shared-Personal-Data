@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import json
 import os
+import hashlib
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
+try:
+    from dotenv import load_dotenv
+except ImportError:  # Keep template mode usable before optional env support is installed.
+    load_dotenv = None
 
 from simulator import ExposureCalculator, PhishingSimulator, defense_recommendations
 
@@ -17,6 +22,10 @@ app = Flask(__name__)
 
 
 def load_local_env() -> None:
+    if load_dotenv:
+        load_dotenv(ENV_PATH, override=True)
+        return
+
     if not ENV_PATH.exists():
         return
 
@@ -29,11 +38,26 @@ def load_local_env() -> None:
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip().strip('"').strip("'")
-        if value and not os.environ.get(key):
+        if value:
             os.environ[key] = value
 
 
 load_local_env()
+
+
+def get_api_key_info() -> dict:
+    if os.environ.get("GEMINI_API_KEY"):
+        key = os.environ["GEMINI_API_KEY"]
+        source = "GEMINI_API_KEY"
+    elif os.environ.get("GOOGLE_API_KEY"):
+        key = os.environ["GOOGLE_API_KEY"]
+        source = "GOOGLE_API_KEY"
+    else:
+        key = ""
+        source = None
+
+    fingerprint = hashlib.sha256(key.encode("utf-8")).hexdigest()[:12] if key else None
+    return {"key": key, "source": source, "fingerprint": fingerprint}
 
 
 def load_config() -> dict:
@@ -43,7 +67,7 @@ def load_config() -> dict:
 
 def get_services(use_llm: bool = False) -> tuple[dict, ExposureCalculator, PhishingSimulator]:
     config = load_config()
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    api_key = get_api_key_info()["key"]
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
     simulator = PhishingSimulator(use_llm=use_llm, api_key=api_key, model=model)
     return config, ExposureCalculator(config["exposure_weights"]), simulator
@@ -79,11 +103,12 @@ def profiles():
 
 @app.get("/api/llm-status")
 def llm_status():
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    key_info = get_api_key_info()
     return jsonify(
         {
-            "llm_available": bool(api_key),
-            "key_source": "GEMINI_API_KEY" if os.environ.get("GEMINI_API_KEY") else ("GOOGLE_API_KEY" if os.environ.get("GOOGLE_API_KEY") else None),
+            "llm_available": bool(key_info["key"]),
+            "key_source": key_info["source"],
+            "key_fingerprint": key_info["fingerprint"],
             "model": os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"),
             "env_file_present": ENV_PATH.exists(),
         }
@@ -116,8 +141,8 @@ def simulate():
     
     # Check LLM availability BEFORE attempting generation
     if use_llm:
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
+        key_info = get_api_key_info()
+        if not key_info["key"]:
             return jsonify({
                 "error": "LLM mode requires GEMINI_API_KEY or GOOGLE_API_KEY environment variable",
                 "llm_available": False,
@@ -130,9 +155,16 @@ def simulate():
             }), 400
     
     try:
-        # This will raise RuntimeError if LLM fails (no fallback)
-        email = simulator.generate_email(profile, exposure)
+        if use_llm:
+            # This will raise RuntimeError if LLM fails (no fallback)
+            email = simulator.generate_email(profile, exposure)
+            generation_method = "Gemini LLM"
+        else:
+            email = simulator.generate_template_email(profile, exposure)
+            generation_method = "Template"
+
         metrics = simulator.evaluate(email, profile, exposure)
+        key_info = get_api_key_info()
         
         return jsonify(
             {
@@ -141,9 +173,10 @@ def simulate():
                 "risk_level": exposure.level,
                 "factors": exposure.factors,
                 "email": email,
-                "generation_method": "Gemini LLM",
+                "generation_method": generation_method,
                 "llm_requested": use_llm,
-                "llm_available": True,
+                "llm_available": bool(key_info["key"]),
+                "key_fingerprint": key_info["fingerprint"],
                 "llm_error": None,
                 "metrics": metrics,
                 "recommendations": defense_recommendations(exposure),
@@ -160,6 +193,7 @@ def simulate():
             "factors": exposure.factors,
             "llm_requested": use_llm,
             "llm_available": bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")),
+            "key_fingerprint": get_api_key_info()["fingerprint"],
             "llm_error": str(e),
             "recommendations": defense_recommendations(exposure),
         }), 503  # Service Unavailable

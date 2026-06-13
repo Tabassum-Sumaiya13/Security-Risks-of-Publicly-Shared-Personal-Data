@@ -37,7 +37,7 @@ Or create `pcs/.env`:
 
 ```text
 GEMINI_API_KEY=your-api-key
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 Then restart Flask:
@@ -63,7 +63,7 @@ python app.py
 Optional model override:
 
 ```powershell
-$env:GEMINI_MODEL="gemini-2.0-flash"
+$env:GEMINI_MODEL="gemini-2.5-flash"
 ```
 
 ## Project Structure
